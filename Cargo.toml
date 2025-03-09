@@ -1,0 +1,12 @@
+[package]
+name = "obsidian-ssg"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+askama = { version = "0.12.1", features = ["markdown", "serde"] }
+clap = { version = "4.5.31", features = ["derive"] }
+walkdir = "2.4.0"
+regex = "1.10.0"
+pulldown-cmark = "0.9.3"
+anyhow = "1.0.75"
