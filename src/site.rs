@@ -1,19 +1,40 @@
-use askama::Template;
 use std::path::PathBuf;
+use serde::{Deserialize, Serialize};
 
-pub static CSS: &'static str = include_str!("../static/css/style.css");
 
-pub struct SiteCfg {
-    pub title: String,
-    pub vault_folder: PathBuf, // Relative path to the Obsidian vault
+#[derive(Deserialize, Serialize, Clone)]
+pub enum Layout {
+    Index,
+    Article
 }
 
-#[derive(Template)]
-#[template(path = "page.jinja2")]
-pub struct Page {
-    pub site_title: String,
-    pub page_title: String,
-    pub links: Vec<(String, String)>,
-    pub current_page: String,
-    pub content: String,
+#[derive(Serialize, Deserialize)]
+pub struct Cfg {
+    pub title: String,
+    pub site_folder: PathBuf, // Relative path to the vault
+    pub site_css: Option<String>, // Optional CSS overrides
+}
+
+impl Into<Cfg> for PathBuf {
+    fn into(self) -> Cfg {
+        let content = std::fs::read_to_string(&self).expect("Failed to read config file");
+        toml::from_str(&content).expect("Failed to parse config file")
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Site {
+    pub cfg: Cfg,
+    pub site_notes: Vec<crate::obsidian::Note>,
+}
+
+impl Site {
+    pub fn from_vault(vault: &crate::obsidian::Vault, cfg: Cfg) -> Self {
+        let full_path = vault.path.join(&cfg.site_folder);
+        let site_notes = vault.notes.iter()
+            .filter(|note| note.path.starts_with(&full_path))
+            .cloned()
+            .collect();
+        Site { cfg, site_notes }
+    }
 }
