@@ -2,6 +2,8 @@ use clap::{Parser, Subcommand};
 use std::path::PathBuf;
 mod obsidian;
 mod site;
+mod templates;
+mod server;
 
 #[derive(Parser)]
 #[command(author, version, about = "CLI for running obsidian websites")]
@@ -21,11 +23,15 @@ enum Command {
         #[clap(long, help = "Path to the output file")]
         output: PathBuf,
     },
+    #[command(about = "Serve the site")]
+    Serve {
+        site_data: PathBuf,
+    }
 
 }
 
-
-fn main() {
+#[tokio::main]
+async fn main() {
     // Create a sample Page instance
     let opts = Cli::parse();
     match opts.command {
@@ -35,6 +41,13 @@ fn main() {
             let site = site::Site::from_vault(&vault, site_cfg);
             let json = serde_json::to_string_pretty(&site).expect("Failed to serialize site data");
             std::fs::write(&output, json).expect("Failed to write site data to file");
+        },
+        Command::Serve { site_data } => {
+            let site_data = std::fs::read_to_string(&site_data).expect("Failed to read site data");
+            let site: site::Site = serde_json::from_str(&site_data).expect("Failed to parse site data");
+            let server = server::wiki_router(site);
+            let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+            axum::serve(listener, server).await.unwrap();
         }
     }
 }

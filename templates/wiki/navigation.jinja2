@@ -1,0 +1,9 @@
+<nav id="wiki-navigation">
+    <ul>
+        {% for (link, title) in self.nav() %}
+            <li>
+                <a href="{{ link }}" class="{% if link.to_owned() == note.slug.to_owned() %}active{% endif %}">{{ title }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+</nav>

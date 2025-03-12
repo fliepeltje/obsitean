@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{collections::HashMap, path::PathBuf};
 use serde::{Deserialize, Serialize};
 
 
@@ -8,7 +8,7 @@ pub enum Layout {
     Article
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Cfg {
     pub title: String,
     pub site_folder: PathBuf, // Relative path to the vault
@@ -22,10 +22,12 @@ impl Into<Cfg> for PathBuf {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Site {
     pub cfg: Cfg,
     pub site_notes: Vec<crate::obsidian::Note>,
+    pub linked_notes: HashMap<String, crate::obsidian::Note>,
+    pub embedded_notes: HashMap<String, crate::obsidian::Note>,
 }
 
 impl Site {
@@ -35,6 +37,8 @@ impl Site {
             .filter(|note| note.path.starts_with(&full_path))
             .cloned()
             .collect();
-        Site { cfg, site_notes }
+        let linked_notes = vault.linked_notes(&site_notes);
+        let embedded_notes = vault.embedded_notes(&site_notes);
+        Site { cfg, site_notes, linked_notes, embedded_notes }
     }
 }

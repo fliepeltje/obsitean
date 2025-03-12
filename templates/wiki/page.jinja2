@@ -1,0 +1,8 @@
+{% extends "wiki/base.jinja2" %}
+{% block content %}
+{% include "wiki/header.jinja2" %}
+{% include "wiki/navigation.jinja2" %}
+<main id="wiki-content">
+{{ self.markdown()|markdown }}
+</main>
+{% endblock %}

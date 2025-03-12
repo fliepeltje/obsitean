@@ -50,7 +50,10 @@ impl Note {
                 content.push_str(line);
                 content.push('\n');
             }
-        } 
+        }
+        if content.starts_with("---\n") {
+            content = content[4..].to_string();
+        };
         (frontmatter, content)
     }
 
@@ -62,28 +65,21 @@ impl Note {
             .unwrap_or_else(|| "Untitled".to_string())
     }
 
-    fn linked_notes(&self, vault: &Vault) -> HashMap<String, Note> {
+    pub fn linked_notes(&self, vault: &Vault) -> HashMap<String, Note> {
         // Return a hashmap of reference substring to note; denoted by [[Note Title]] or [[Note Title|Alias]]
         let mut linked_notes = HashMap::new();
         for line in self.content.lines() {
-            let mut words = line.split_whitespace();
-            while let Some(word) = words.next() {
-                if word.starts_with("[[") {
-                    let linked = word.trim_start_matches("[[").trim_end_matches("]]");
-                    let referenced_title = if linked.contains('|') {
-                        linked.split('|').next().unwrap()
-                    } else {
-                        linked
-                    };
-                    match vault.find(referenced_title) {
-                        Ok(note) => {
-                            linked_notes.insert(referenced_title.to_string(), note);
-                        }
-                        Err(_) => {
-                            eprintln!("Note not found: {}", referenced_title);
-                        }
+            let re = regex::Regex::new(r"\[\[([^\]|]+)(?:\|[^\]]+)?\]\]").unwrap();
+            for cap in re.captures_iter(line) {
+                let ref_string = &cap[0];
+                let referenced_title = &cap[1].trim();
+                match vault.find(referenced_title) {
+                    Ok(note) => {
+                        linked_notes.insert(ref_string.to_string(), note);
+                    },
+                    Err(_) => {
+                        eprintln!("Note not found: {}", referenced_title);
                     }
-
                 }
             }
         }
@@ -91,26 +87,21 @@ impl Note {
 
     }
 
-    fn embedded_notes(&self, vault: &Vault) -> HashMap<String, Note> {
-        // Return a hashmap of reference substring to note; denoted by ![[Note Title]]
+    pub fn embedded_notes(&self, vault: &Vault) -> HashMap<String, Note> {
+        // Return a hashmap of reference substring to note; denoted by ![[Note Title]] or ![[Note Title|Alias]] or ![[ Note Title ]]
         let mut embedded_notes = HashMap::new();
         for line in self.content.lines() {
-            let mut words = line.split_whitespace();
-            while let Some(word) = words.next() {
-                if word.starts_with("![[") {
-                    let embedded = word.trim_start_matches("![[[").trim_end_matches("]]");
-                    let referenced_title = if embedded.contains('|') {
-                        embedded.split('|').next().unwrap()
-                    } else {
-                        embedded
-                    };
-                    match vault.find(referenced_title) {
-                        Ok(note) => {
-                            embedded_notes.insert(referenced_title.to_string(), note);
-                        }
-                        Err(_) => {
-                            eprintln!("Note not found: {}", referenced_title);
-                        }
+            // Use regex to find all embedded note references
+            let re = regex::Regex::new(r"!\[\[([^\]|]+)(?:\|[^\]]+)?\]\]").unwrap();
+            for cap in re.captures_iter(line) {
+                let ref_string = &cap[0];
+                let referenced_title = &cap[1].trim();
+                match vault.find(referenced_title) {
+                    Ok(note) => {
+                        embedded_notes.insert(ref_string.to_string(), note);
+                    },
+                    Err(_) => {
+                        eprintln!("Note not found: {}", referenced_title);
                     }
                 }
             }
@@ -179,5 +170,26 @@ impl Vault {
             None => Err(anyhow::anyhow!("Note not found"))
         }
     }
+
+    pub fn linked_notes(&self, notes: &Vec<Note>) -> HashMap<String, Note> {
+        // Return a hashmap of reference substring to note; denoted by [[Note Title]] or [[Note Title|Alias]]
+        let mut linked_notes = HashMap::new();
+        for note in notes {
+            let note_linked_notes = note.linked_notes(self);
+            linked_notes.extend(note_linked_notes);
+        }
+        linked_notes
+    }
+
+    pub fn embedded_notes(&self, notes: &Vec<Note>) -> HashMap<String, Note> {
+        // Return a hashmap of reference substring to note; denoted by ![[Note Title]]
+        let mut embedded_notes = HashMap::new();
+        for note in notes {
+            let note_embedded_notes = note.embedded_notes(self);
+            embedded_notes.extend(note_embedded_notes);
+        }
+        embedded_notes
+    }
+
 }
 
