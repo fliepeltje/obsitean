@@ -7,3 +7,23 @@
         {% endfor %}
     </ul>
 </nav>
+
+<details id="wiki-navigation-mobile">
+    <summary>
+        <span class="burger-menu" style="display: inline-block; margin-right: 8px;">
+            <span class="bar" style="display: block; width: 24px; height: 3px; background-color: var(--text-color, #333); margin: 5px 0; border-radius: 3px;"></span>
+            <span class="bar" style="display: block; width: 24px; height: 3px; background-color: var(--text-color, #333); margin: 5px 0; border-radius: 3px;"></span>
+            <span class="bar" style="display: block; width: 24px; height: 3px; background-color: var(--text-color, #333); margin: 5px 0; border-radius: 3px;"></span>
+        </span>
+        <h2>Menu</h2>
+    </summary>
+    <nav>
+        <ul>
+            {% for (link, title) in self.nav() %}
+                <li>
+                    <a href="{{ link }}" class="{% if link.to_owned() == note.slug.to_owned() %}active{% endif %}">{{ title }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </nav>
+</details>

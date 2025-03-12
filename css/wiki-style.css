@@ -1,33 +1,113 @@
-:root {
+@import url('https://fonts.googleapis.com/css2?family=Markazi+Text&display=swap');
 
+:root {
+    --text-font: 'Markazi Text', serif;
 }
 
 body{
+    font-family: var(--text-font);
     max-width: 1200px;
     display: grid;
-    grid-template-columns: 250px 1fr;
-    grid-template-rows: auto 1fr;
-    grid-template-areas: "header header" "side-nav page-content";
     margin: 0 auto;
     padding: 1rem;
-    grid-gap: 1rem;
+    grid-template-columns: 250px 1fr;
+    grid-template-rows: auto 1fr;
+    grid-template-areas: ". header" "side-nav page-content";
+    
 
 }
 
 #wiki-content {
     grid-area: page-content;
-    padding: 2rem;
-    min-height: 100vh;
+    padding: 1rem;
+}
+
+nav > ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+        margin-bottom: 0.5rem;
+
+        a {
+            text-decoration: none;
+            display: block;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            transition: background-color 0.3s;
+        }
+    }
+}
+
+@media screen and (max-width: 768px) {
+    body {
+        grid-template-columns: 1fr;
+        grid-template-areas: "header" "mobile-nav" "page-content";
+    }
+    
+    #wiki-navigation {
+        display: none;
+    }
+    
+    #wiki-navigation-mobile {
+        display: block;
+        grid-area: mobile-nav;
+        width: 100%;
+        }
+
+        #wiki-navigation-mobile summary {
+            display: block;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            }
+
+            #wiki-navigation-mobile summary h2 {
+                margin: 0;
+                display: inline-block;
+                vertical-align: middle;
+            }
+
+            #wiki-navigation-mobile summary span {
+                display: inline-block;
+                vertical-align: middle;
+            }
+
+        /* #wiki-navigation-mobile[open] {
+            border-bottom: 1px solid var(--color-nav-bg);
+        } */
 }
 
 #wiki-navigation {
     grid-area: side-nav;
     padding: 2rem 1rem;
-    background-color: var(--color-nav-bg);
 }
+
+@media screen and (min-width: 768px) {
+    body {
+        grid-template-columns: 1fr 3fr;
+        grid-template-areas: "header header" "side-nav page-content";
+    }
+
+    #wiki-navigation {
+        display: block;
+        grid-area: side-nav;
+    }
+    
+    #wiki-navigation-mobile {
+        display: none;
+    }
+}
+
 
 #wiki-header {
     grid-area: header;
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
+    margin-bottom: 0.5rem;
+
+    h1 {
+        margin: 0;
+    }
 }
