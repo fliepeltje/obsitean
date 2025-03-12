@@ -2,7 +2,8 @@ use axum::routing::get;
 use axum::Router;
 use askama::Template;
 use axum::extract::{State, Path};
-use axum::response::{IntoResponse, Response, Html};
+use axum::response::{IntoResponse, Response, Html, };
+use axum_extra::response::Css;
 
 
 static WIKI_CSS : &str = include_str!("../css/wiki-style.css");
@@ -30,7 +31,7 @@ pub fn static_router() -> Router<crate::site::Site> {
     // router for static files
     Router::new()
         .route("/css/wiki-style.css", get(|| async {
-            WIKI_CSS.into_response()
+            Css(WIKI_CSS).into_response()
         }))
 }
 
