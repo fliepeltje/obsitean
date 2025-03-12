@@ -17,7 +17,9 @@ pub struct Cfg {
 
 impl Into<Cfg> for PathBuf {
     fn into(self) -> Cfg {
-        let content = std::fs::read_to_string(&self).expect("Failed to read config file");
+        // Canonicalize path to handle relative and home paths properly
+        let path = self.canonicalize().expect("Failed to canonicalize path");
+        let content = std::fs::read_to_string(&path).expect("Failed to read config file");
         toml::from_str(&content).expect("Failed to parse config file")
     }
 }

@@ -3,8 +3,9 @@ use axum::Router;
 use askama::Template;
 use axum::extract::{State, Path};
 use axum::response::{IntoResponse, Response, Html};
-use std::path::PathBuf;
-use tower_http::services::ServeDir;
+
+
+static WIKI_CSS : &str = include_str!("../css/wiki-style.css");
 
 async fn wiki_page(State(site): State<crate::site::Site>, Path(slug): Path<String>) -> Response {
     // Find the note by slug
@@ -28,7 +29,9 @@ async fn wiki_page(State(site): State<crate::site::Site>, Path(slug): Path<Strin
 pub fn static_router() -> Router<crate::site::Site> {
     // router for static files
     Router::new()
-        .nest_service("/css", ServeDir::new(PathBuf::from("css")))
+        .route("/css/wiki-style.css", get(|| async {
+            WIKI_CSS.into_response()
+        }))
 }
 
 

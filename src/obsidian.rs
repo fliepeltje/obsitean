@@ -135,6 +135,8 @@ pub struct Vault {
 
 impl From<PathBuf> for Vault {
     fn from(path: PathBuf) -> Self {
+        let path = std::fs::canonicalize(&path)
+        .unwrap_or_else(|_| path.clone());
         // walks the entire path and returns a vector of notes, process only .md files
         let mut notes = Vec::new();
         for entry in WalkDir::new(&path)
